@@ -40,7 +40,7 @@ while( (err > epsilon) && (t < max_epoch) )
     img_idx = randperm(n);
 
     for i = img_idx ;
-        
+               
         x = Xb(:,i)';
     
         % Forward Propogation
@@ -62,9 +62,10 @@ while( (err > epsilon) && (t < max_epoch) )
         w = wbp;
         v = vbp;
         
-        % Go to next iteration
-        t = t + 1; 
     end
+    
+        % Go to next epoch
+        t = t + 1; 
 end
 
 %% Test Autoencoder
