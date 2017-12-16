@@ -12,7 +12,7 @@ switch act_func
     case 1
         output = matrix;
     case 2
-        output = logsig(matrix)%(1./(1+exp(-1.*matrix)));
+        output = logsig(matrix); %(1./(1+exp(-1.*matrix)));
     case 3
         output = ((2./(1+exp(-2.*matrix))) -1); 
     case 4

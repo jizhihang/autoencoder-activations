@@ -17,8 +17,8 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 
 %% Setup hyperparameters
 
-max_epoch = 10; % number of training iterations to run
-epsilon = .001; % convergence factor
+max_epoch = 100; % number of training iterations to run
+epsilon = .0001; % convergence factor
 alpha = 0.01; % step size
 num_hidden = 784;
 [m, n] = size(train_images); % input layer dimensions
