@@ -12,9 +12,9 @@ switch act_func
     case 1
         output = matrix;
     case 2
-        output = (1./(1+e.^(-1.*matrix)));
+        output = logsig(matrix)%(1./(1+exp(-1.*matrix)));
     case 3
-        output = ((2./(1+e.^(-2.*matrix))) -1); 
+        output = ((2./(1+exp(-2.*matrix))) -1); 
     case 4
         output = max(0, matrix);
     case 5

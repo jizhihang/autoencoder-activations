@@ -12,7 +12,7 @@ switch act_func
     case 1
         output = 1;
     case 2
-        output = (act(matrix, 2) .* (1 - act(matrix, 2)));
+        output = logsig(matrix);% (act(matrix, 2) .* (1 - act(matrix, 2)));
     case 3
         output = (1 - (act(matrix, 3)).^2);
     case 4
