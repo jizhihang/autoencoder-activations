@@ -1,12 +1,13 @@
 function [ output ] = deriv( matrix, act_func )
-% ACT - returns a matrix after applying a specified activation function to
-% all of its elements. If invalid `act` specified, returns -1. 
+% Deriv - returns a matrix after applying the derivative of a specified 
+% activation function to all of its elements. 
+% If invalid `act` specified, returns -1. 
 %   Activation functions: 
 %     (1) Linear
 %     (2) Logistic (sigmoid)
 %     (3) TanH
 %     (4) ReLu
-%     (5) Softmax
+%     (5) ELU
 
 switch act_func
     case 1
@@ -18,7 +19,7 @@ switch act_func
     case 4
         output = matrix >= 0;
     case 5
-        output = -1; % TODO: Implement softmax derivative
+        output = -1; % TODO: Implement ELU derivative
     otherwise
         output = -1;
 end

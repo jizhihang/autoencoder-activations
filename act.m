@@ -6,7 +6,7 @@ function [ output ] = act( matrix, act_func )
 %     (2) Logistic (sigmoid)
 %     (3) TanH
 %     (4) ReLu
-%     (5) Softmax
+%     (5) ELU
 
 switch act_func
     case 1
@@ -18,7 +18,7 @@ switch act_func
     case 4
         output = max(0, matrix);
     case 5
-        output = softmax(matrix);
+        output = -1; % TODO: Implement ELU function
     otherwise
         output = -1;
 end

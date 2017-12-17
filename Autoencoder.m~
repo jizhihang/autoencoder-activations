@@ -17,31 +17,38 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 
 %% Setup hyperparameters
 
+
+
+
+
 num_hidden = 784;   % number of hidden 
 act_func = 2;       % activation function
 alpha = 0.01;       % step size
-epsilon = 10;    % convergence factor
+epsilon = .0001;    % convergence factor
 batch = 1000;        % batch size
-max_epoch = 10;      % number of training iterations to run
+max_epoch = 0;      % number of training iterations to run
 
 %% Train Network
 [ w, v, t ] = train_network(train_images, train_images, num_hidden, act_func, alpha, epsilon, batch, max_epoch );
 
 if(t==max_epoch)
-    disp(['Did not converge, stopped after ' num2str(t), ' epochs']);
-else
-    disp(['Converged after ' num2str(t), ' epochs']);
-end
+    disp('Did not converge, stopped after ' num2int(t), ' epochs');
+els
+    disp('Did not converge, stopped after ' num2int(t), ' epochs');
 
 %% Test Autoencoder
 
 % Training Set Error
-[m,n] = size(train_images);
-h_p = [ones(n,1) train_images'] * w;
-h = [ones(n,1) act(h_p, act_func)];
+h_p = [1 x_batch] * w;
+h = act([1 h_p], act_func);
 o_p = h * v;
 o = act(o_p, act_func);
 
-loss = norm(o - train_images')
+dist = norm(o - x_batch)
+
+
+
+%yhat = act(act(train_images' * w, act_func) * v, act_func);
+%error = norm(yhat - train_images')
 
 
