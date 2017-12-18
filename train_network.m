@@ -77,4 +77,6 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
             % Go to next epoch
             t = t + 1; 
     end
+    training_loss = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
+    disp(['L2 Training Loss at epoch ',num2str(t),' is ', num2str(training_loss)]);
 end
