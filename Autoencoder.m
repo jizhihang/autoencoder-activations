@@ -25,8 +25,8 @@ x_val = x(indices == 1,:);
 %% Setup hyperparameters
 
 num_hidden = 100;   % number of hidden 
-act_func = 2;       % activation function
-alpha = 1e-3;       % step size
+act_func = 1;       % activation function
+% alpha = 1e-3;       % step size
 % lambda = 0;      % regularization parameter
 batch = 1000;        % batch size
 max_epoch = 25;      % number of training iterations to run
@@ -36,29 +36,30 @@ lambda = 10.^(2:-2:-4);
 alpha = 10.^[1:-1:-4  -6:-2:-10];
 losses = zeros(size(lambda,2), size(alpha,2)); % rows are lambda, columns are alpha
 
-min = Inf;
-min_idx = [0  0];
+for j=1:5
+    act_func = j
+    min = Inf;
+    min_idx = [0  0];
 
-figure(1); hold on;
-for i=1:size(lambda,2)
-    for k=1:size(alpha, 2)
-        [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha(k),lambda(i), batch, max_epoch );
-        t = size(loss,2);
-        if(t~=max_epoch)
-            % Had to break, values became nonreal
-            loss(t+1:max_epoch) = loss(t);
+    % figure(1); hold on;
+    for i=1:size(lambda,2)
+        for k=1:size(alpha, 2)
+            disp(['lambda = ',num2str(lambda(i)),', alpha = ', num2str(alpha(k))])
+            [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha(k),lambda(i), batch, max_epoch );
+            t = size(loss,2);
+            if(t~=max_epoch)
+                % Had to break, values became nonreal
+                loss(t+1:max_epoch) = loss(t);
+            end
+
+            if loss(t) < min, min = loss(t); min_idx = [i k]; end
+
+            % plot(1:max_epoch,loss);
+            % leg(i) = "lambda = "+num2str(lambda(i));
         end
-        
-        if loss(t) < min, min = loss(t); min_idx = [i k]; end
-        
-        % plot(1:max_epoch,loss);
-        % leg(i) = "lambda = "+num2str(lambda(i));
     end
-end
-%legend(leg);
-hold off;
+    %legend(leg);
+    % hold off;
 
-[best_loss, best_loss_idx] = min(losses);
-lambda_idx = best_loss_idx(1);
-alpha_idx = best_loss_idx(2);
-disp(['Best loss for act_func(',act_func,') was ', best_loss, ' when alpha=',alpha(alpha_idx),' and lambda=', lambda(lambda_idx),'.']);
+    disp(['Best loss for act_func(',num2str(act_func),') was ', num2str(min), ' when alpha=',num2str(alpha(min_idx(2))),' and lambda=', num2str(lambda(min_idx(1))),'.']);
+end

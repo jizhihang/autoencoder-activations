@@ -49,9 +49,9 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         
         reverseStr = '';
         for i = 1:ceil(n/batch)
-            msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
-            fprintf([reverseStr, msg]);
-            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+%             msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
+%             fprintf([reverseStr, msg]);
+%             reverseStr = repmat(sprintf('\b'), 1, length(msg));
             
             idx_hi = idx_lo + batch - 1;
             if idx_hi > n, idx_hi = n; end
@@ -85,7 +85,7 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         t = t + 1;
         loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
         
-        fprintf('\nL2 Validation Loss After Epoch %d Is %3.1e\n',t,loss(t))
+        %fprintf('\nL2 Validation Loss After Epoch %d Is %3.1e\n',t,loss(t))
         
         if isnan(loss(t)), t = max_epoch; return; end%loss = cat(2, loss, zeros(max_epoch - t,1)'); return; end
         
