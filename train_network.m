@@ -26,10 +26,12 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
     if nargin<5, alpha = 1e-2; end
     if nargin<4, act_func = 1; end
     if nargin<3, num_hidden = 784; end
-
+    
+    
     [m, n] = size(X); % input layer dimensions
     t = 0;
     dist = Inf; % initialize to some value that clearly has not converged yet
+    
 
     % Generate normally distributed weight matrices with pseudorandom numbers.
     w = randn(m+1, num_hidden); % weights for inputs-hidden
@@ -43,8 +45,12 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
         img_idx = randperm(n);
         idx_lo = 1;
         
-
-        for i = 1:ceil(n/batch)        
+        reverseStr = '';
+        for i = 1:ceil(n/batch)
+            msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
+            fprintf([reverseStr, msg]);
+            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            
             idx_hi = idx_lo + batch - 1;
             if idx_hi > n, idx_hi = n; end
             len = idx_hi-idx_lo+1;
@@ -60,23 +66,25 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
 
             % Backpropagation
             deltaoh = (o - y_batch).*deriv(o, act_func);
-            vbp = v - alpha * h' * deltaoh;
+            v_new = v - alpha * h' * deltaoh;
             deltahi = deltaoh * v(2:end, :)' .* deriv(h(:,2:end), act_func);
-            wbp = w - alpha * x_batch' * deltahi;
+            w_new = w - alpha * x_batch' * deltahi;
 
             % Update Error
-            dist = norm(vbp - v);
+            dist = norm(v_new - v);
 
             % Update weights
-            w = wbp;
-            v = vbp;
+            w = w_new;
+            v = v_new;
             
             idx_lo = idx_lo + batch;
         end
-
-            % Go to next epoch
-            t = t + 1; 
+        
+        train_loss = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
+        % Go to next epoch
+        t = t + 1;
+        fprintf('\nL2 Training Loss after epoch %d is %3.1e\n',t,train_loss)
+        %disp(['L2 Training Loss after epoch ',num2str(t),' is ', num2str(train_loss)]);
+        fprintf('');
     end
-    training_loss = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
-    disp(['L2 Training Loss at epoch ',num2str(t),' is ', num2str(training_loss)]);
 end

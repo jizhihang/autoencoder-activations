@@ -18,10 +18,10 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 %% Setup hyperparameters
 
 num_hidden = 784;   % number of hidden 
-act_func = 2;       % activation function
-alpha = 0.001;       % step size
-epsilon = 10;    % convergence factor
-batch = 10000;        % batch size
+act_func = 1;       % activation function
+alpha = 1e-8;       % step size
+epsilon = 1e-3;    % convergence factor
+batch = 1000;        % batch size
 max_epoch = 10;      % number of training iterations to run
 
 %% Train Network
