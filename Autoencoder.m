@@ -18,7 +18,7 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 %% Setup hyperparameters
 
 num_hidden = 100;   % number of hidden 
-act_func = 5;       % activation function
+act_func = 2;       % activation function
 alpha = 1e-3;       % step size
 % lambda = 0;      % regularization parameter
 epsilon = 1e-10;     % convergence factor
