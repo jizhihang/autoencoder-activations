@@ -1,4 +1,4 @@
-function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsilon, lambda, batch, max_epoch )
+function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_func, alpha, epsilon, lambda, batch, max_epoch )
     % Train Network: trains a 2-layer neural network
     % Parameters:
     %   X           - Input Vector (n x m)
@@ -21,17 +21,18 @@ function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsi
     %   v           - The learned weights from hidden to output layer
     %   t           - The number of epochs
     
-    if nargin<9, max_epoch = 10; end
-    if nargin<8, batch = 100; end
-    if nargin<7, lambda = 0; end
-    if nargin<6, epsilon = 1e-4; end
-    if nargin<5, alpha = 1e-2; end
-    if nargin<4, act_func = 1; end
-    if nargin<3, num_hidden = 784; end
+    if nargin<11, max_epoch = 10; end
+    if nargin<10, batch = 100; end
+    if nargin<9, lambda = 0; end
+    if nargin<8, epsilon = 1e-4; end
+    if nargin<7, alpha = 1e-2; end
+    if nargin<6, act_func = 1; end
+    if nargin<5, num_hidden = 784; end
     
     rng('default');
     
-    [m, n] = size(X); % input layer dimensions
+    [n,m] = size(X); % input layer dimensions
+    [n_val,m_val] = size(X_val);
     t = 0;
     dist = Inf; % initialize to some value that clearly has not converged yet
     
@@ -58,8 +59,8 @@ function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsi
             if idx_hi > n, idx_hi = n; end
             len = idx_hi-idx_lo+1;
 
-            x_batch =[ones(len,1) X(:,img_idx(idx_lo:idx_hi))'];
-            y_batch =y(:,img_idx(idx_lo:idx_hi))';
+            x_batch =[ones(len,1) X(img_idx(idx_lo:idx_hi),:)];
+            y_batch =y(img_idx(idx_lo:idx_hi),:);
 
             % Forward Propogation
             h_p =  x_batch * w;
@@ -84,7 +85,7 @@ function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsi
         end
         % Go to next epoch
         t = t + 1;
-        loss(t) = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
-        fprintf('\nL2 Training Loss After Epoch %d Is %3.1e\n',t,loss(t))
+        loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
+        fprintf('\nL2 Validation Loss After Epoch %d Is %3.1e\n',t,loss(t))
     end
 end

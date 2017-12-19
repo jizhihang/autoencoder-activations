@@ -15,6 +15,13 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 %   60000x1   (training labels)
 %   10000x1   (testing labels)
 
+% Take 10% of training set and use it for validation
+x = train_images';
+indices = crossvalind('Kfold', ones(1, size(x, 1)), 10);
+x_train = x(~(indices == 1));
+x_val = x(indices == 1);
+
+
 %% Setup hyperparameters
 
 num_hidden = 100;   % number of hidden 
@@ -29,7 +36,7 @@ max_epoch = 10;      % number of training iterations to run
 lambda = [0,.1, .01, .001];
 figure(1); hold on;
 for i=1:size(lambda,2)
-    [ w, v, loss ] = train_network(train_images, train_images, num_hidden, act_func, alpha, epsilon,lambda(i), batch, max_epoch );
+    [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha, epsilon,lambda(i), batch, max_epoch );
     t = size(loss,2);
     if(t==max_epoch)
         disp(['Did not converge, stopped after ' num2str(t) ' epochs']);
@@ -43,16 +50,3 @@ for i=1:size(lambda,2)
 end
 legend(leg);
 hold off;
-
-%% Test Autoencoder
-
-% Training Set Error
-[m,n] = size(train_images);
-h_p = [ones(n,1) train_images'] * w;
-h = [ones(n,1) act(h_p, act_func)];
-o_p = h * v;
-o = act(o_p, act_func);
-
-loss = norm(o - train_images')
-
-
