@@ -19,9 +19,9 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 
 num_hidden = 100;   % number of hidden 
 act_func = 5;       % activation function
-alpha = 1e3;       % step size
+alpha = 1e-3;       % step size
 % lambda = 0;      % regularization parameter
-epsilon = 1e-100;     % convergence factor
+epsilon = 1e-10;     % convergence factor
 batch = 1000;        % batch size
 max_epoch = 10;      % number of training iterations to run
 
@@ -35,7 +35,7 @@ for i=1:size(lambda,2)
         disp(['Did not converge, stopped after ' num2str(t) ' epochs']);
     else
         disp(['Converged after ' num2str(t) ' epochs']);
-        loss=[loss zeros(1, max_epoch-t)];
+        loss(t+1:max_epoch) = loss(t);
     end
     plot(1:max_epoch,loss);
     

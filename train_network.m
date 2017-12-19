@@ -29,6 +29,7 @@ function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsi
     if nargin<4, act_func = 1; end
     if nargin<3, num_hidden = 784; end
     
+    rng('default');
     
     [m, n] = size(X); % input layer dimensions
     t = 0;
