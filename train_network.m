@@ -1,4 +1,4 @@
-function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_func, alpha, epsilon, lambda, batch, max_epoch )
+function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_func, alpha, lambda, batch, max_epoch )
     % Train Network: trains a 2-layer neural network
     % Parameters:
     %   X           - Input Vector (n x m)
@@ -11,7 +11,6 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
     %         (4) ReLu
     %         (5) ELU
     %   alpha       - The step size
-    %   epsilon     - The convergence criteria (l2-norm of v)
     %   lambda      - The l2 regularization term
     %   batch       - The batch size
     %   max_epoch   - The maximum number of epochs
@@ -24,10 +23,9 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
     if nargin<11, max_epoch = 10; end
     if nargin<10, batch = 100; end
     if nargin<9, lambda = 0; end
-    if nargin<8, epsilon = 1e-4; end
-    if nargin<7, alpha = 1e-2; end
-    if nargin<6, act_func = 1; end
-    if nargin<5, num_hidden = 784; end
+    if nargin<8, alpha = 1e-2; end
+    if nargin<7, act_func = 1; end
+    if nargin<6, num_hidden = 784; end
     
     rng('default');
     
@@ -43,7 +41,7 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
 
 
     %% Train Autoencoder
-    while( (dist > epsilon) && (t < max_epoch) )
+    while( (t < max_epoch) )
 
         % Pick random images
         img_idx = randperm(n);
@@ -86,6 +84,10 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         % Go to next epoch
         t = t + 1;
         loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
+        
         fprintf('\nL2 Validation Loss After Epoch %d Is %3.1e\n',t,loss(t))
+        
+        if isnan(loss(t)), t = max_epoch; return; end%loss = cat(2, loss, zeros(max_epoch - t,1)'); return; end
+        
     end
 end

@@ -18,8 +18,8 @@ test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 % Take 10% of training set and use it for validation
 x = train_images';
 indices = crossvalind('Kfold', ones(1, size(x, 1)), 10);
-x_train = x(~(indices == 1));
-x_val = x(indices == 1);
+x_train = x(~(indices == 1),:);
+x_val = x(indices == 1,:);
 
 
 %% Setup hyperparameters
@@ -28,25 +28,37 @@ num_hidden = 100;   % number of hidden
 act_func = 2;       % activation function
 alpha = 1e-3;       % step size
 % lambda = 0;      % regularization parameter
-epsilon = 1e-10;     % convergence factor
 batch = 1000;        % batch size
-max_epoch = 10;      % number of training iterations to run
+max_epoch = 25;      % number of training iterations to run
 
 %% Train Network
-lambda = [0,.1, .01, .001];
+lambda = 10.^(2:-2:-4);
+alpha = 10.^[1:-1:-4  -6:-2:-10];
+losses = zeros(size(lambda,2), size(alpha,2)); % rows are lambda, columns are alpha
+
+min = Inf;
+min_idx = [0  0];
+
 figure(1); hold on;
 for i=1:size(lambda,2)
-    [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha, epsilon,lambda(i), batch, max_epoch );
-    t = size(loss,2);
-    if(t==max_epoch)
-        disp(['Did not converge, stopped after ' num2str(t) ' epochs']);
-    else
-        disp(['Converged after ' num2str(t) ' epochs']);
-        loss(t+1:max_epoch) = loss(t);
+    for k=1:size(alpha, 2)
+        [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha(k),lambda(i), batch, max_epoch );
+        t = size(loss,2);
+        if(t~=max_epoch)
+            % Had to break, values became nonreal
+            loss(t+1:max_epoch) = loss(t);
+        end
+        
+        if loss(t) < min, min = loss(t); min_idx = [i k]; end
+        
+        % plot(1:max_epoch,loss);
+        % leg(i) = "lambda = "+num2str(lambda(i));
     end
-    plot(1:max_epoch,loss);
-    
-    leg(i) = "lambda = "+num2str(lambda(i));
 end
-legend(leg);
+%legend(leg);
 hold off;
+
+[best_loss, best_loss_idx] = min(losses);
+lambda_idx = best_loss_idx(1);
+alpha_idx = best_loss_idx(2);
+disp(['Best loss for act_func(',act_func,') was ', best_loss, ' when alpha=',alpha(alpha_idx),' and lambda=', lambda(lambda_idx),'.']);
