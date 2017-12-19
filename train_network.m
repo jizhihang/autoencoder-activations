@@ -1,4 +1,4 @@
-function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon, batch, max_epoch )
+function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsilon, lambda, batch, max_epoch )
     % Train Network: trains a 2-layer neural network
     % Parameters:
     %   X           - Input Vector (n x m)
@@ -12,6 +12,7 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
     %         (5) ELU
     %   alpha       - The step size
     %   epsilon     - The convergence criteria (l2-norm of v)
+    %   lambda      - The l2 regularization term
     %   batch       - The batch size
     %   max_epoch   - The maximum number of epochs
     %
@@ -20,8 +21,9 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
     %   v           - The learned weights from hidden to output layer
     %   t           - The number of epochs
     
-    if nargin<8, max_epoch = 10; end
-    if nargin<7, batch = 100; end
+    if nargin<9, max_epoch = 10; end
+    if nargin<8, batch = 100; end
+    if nargin<7, lambda = 0; end
     if nargin<6, epsilon = 1e-4; end
     if nargin<5, alpha = 1e-2; end
     if nargin<4, act_func = 1; end
@@ -65,10 +67,10 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
             o = act(o_p, act_func);
 
             % Backpropagation
-            deltaoh = (o - y_batch).*deriv(o, act_func);
-            v_new = v - alpha * h' * deltaoh;
-            deltahi = deltaoh * v(2:end, :)' .* deriv(h(:,2:end), act_func);
-            w_new = w - alpha * x_batch' * deltahi;
+            deltaoh = (o - y_batch).*deriv(o_p, act_func);
+            v_new = v - alpha * h' * deltaoh - lambda*v;
+            deltahi = deltaoh * v(2:end, :)' .* deriv(h_p, act_func);
+            w_new = w - alpha * x_batch' * deltahi - lambda*w;
 
             % Update Error
             dist = norm(v_new - v);
@@ -79,12 +81,9 @@ function [ w, v, t ] = train_network( X, y, num_hidden, act_func, alpha, epsilon
             
             idx_lo = idx_lo + batch;
         end
-        
-        train_loss = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
         % Go to next epoch
         t = t + 1;
-        fprintf('\nL2 Training Loss after epoch %d is %3.1e\n',t,train_loss)
-        %disp(['L2 Training Loss after epoch ',num2str(t),' is ', num2str(train_loss)]);
-        fprintf('');
+        loss(t) = norm(act([ones(n,1) act([ones(n,1) X']*w, act_func)]*v, act_func)-y');
+        fprintf('\nL2 Training Loss After Epoch %d Is %3.1e\n',t,loss(t))
     end
 end
