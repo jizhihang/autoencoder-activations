@@ -78,7 +78,7 @@ function [ w, v, loss ] = train_network( X, y, num_hidden, act_func, alpha, epsi
             % Update weights
             w = w_new;
             v = v_new;
-            
+                        
             idx_lo = idx_lo + batch;
         end
         % Go to next epoch

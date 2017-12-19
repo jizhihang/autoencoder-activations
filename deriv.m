@@ -13,13 +13,13 @@ switch act_func
     case 1
         output = 1;
     case 2
-        output = logsig(matrix);% (act(matrix, 2) .* (1 - act(matrix, 2)));
+        output = (1-logsig(matrix))*(logsig(matrix));
     case 3
         output = (1 - (act(matrix, 3)).^2);
     case 4
         output = matrix >= 0;
     case 5
-        output = -1; % TODO: Implement ELU derivative
+        output = (matrix>0)+(matrix<=0).*exp(matrix); % TODO: Implement ELU derivative
     otherwise
         output = -1;
 end

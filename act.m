@@ -18,7 +18,7 @@ switch act_func
     case 4
         output = max(0, matrix);
     case 5
-        output = -1; % TODO: Implement ELU function
+        output = max(0,matrix)+min(0,exp(matrix)-1);
     otherwise
         output = -1;
 end
