@@ -44,6 +44,6 @@ function [alpha, lambda] = find_params(x_train,y_train,x_val,y_val,num_hidden,ba
         % Save and display best vars
         alpha(act_func) = alpha_support(min_idx(2));
         lambda(act_func) = lambda_support(min_idx(1));
-        disp(["Best loss for "+act2str(act_func)+" was "+ num2str(min), ' when alpha=',num2str(alpha(act_func)),' and lambda=', num2str(lambda(act_func)),'.']);
+        disp("Best loss for "+act2str(act_func)+" was "+ num2str(min)+" when alpha="+num2str(alpha(act_func))+" and lambda="+ num2str(lambda(act_func))+".");
     end
 end
