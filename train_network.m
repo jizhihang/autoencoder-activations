@@ -45,6 +45,7 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
     v = randn(num_hidden+1, m); % weights for hidden-outputs
     
     loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
+    if(verbose), fprintf('\nL2 Validation Loss Prior to Epoch %d Is %1.2e\n',1,loss(t)); end
 
     %% Train Autoencoder
     while( (t <= max_epoch) && (err > epsilon) )
@@ -56,7 +57,7 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         reverseStr = '';
         for i = 1:ceil(n/batch)
             if(verbose)
-                msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
+                msg = sprintf('Epoch %d Progress: %3.1f', t, 100 * i / ceil(n/batch));
                 fprintf([reverseStr, msg]);
                 reverseStr = repmat(sprintf('\b'), 1, length(msg));
             end
@@ -95,8 +96,14 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         
         if(verbose), fprintf('\nL2 Validation Loss After Epoch %d Is %1.2e\n',t-1,loss(t)); end
         
-        if isnan(loss(t)), return; end%loss = cat(2, loss, zeros(max_epoch - t,1)'); return; end
-        if((loss(t)-loss(t-1))<epsilon), return; end;
+        if isnan(loss(t))
+            if(verbose), disp('L2 Became Non-Real'); end
+            return; 
+        end
+        if(abs(loss(t)-loss(t-1))<epsilon)
+            if(verbose),disp('L2 Loss Converged'); end 
+            return; 
+        end
         
     end
 end
