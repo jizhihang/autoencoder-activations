@@ -2,18 +2,13 @@
 close all; clear all;
 %% Load data
 train_images = loadMNISTImages('MNIST/train-images-idx3-ubyte');
-train_labels = loadMNISTLabels('MNIST/train-labels-idx1-ubyte');
-
 test_images = loadMNISTImages('MNIST/t10k-images-idx3-ubyte');
-test_labels = loadMNISTLabels('MNIST/t10k-labels-idx1-ubyte');
 
 % Training and testing images are known to be 28x28 from the dataset
 % specifications, but, the manner in which we are loading them puts them
 % into a neural-network-friendly 2D format of: 
 %   784x60000 (training images)
-%   784x10000 (testing images)
 %   60000x1   (training labels)
-%   10000x1   (testing labels)
 
 % Take 10% of training set and use it for validation
 x = train_images';
@@ -24,42 +19,47 @@ x_val = x(indices == 1,:);
 
 %% Setup hyperparameters
 
-num_hidden = 100;   % number of hidden 
-act_func = 1;       % activation function
-% alpha = 1e-3;       % step size
-% lambda = 0;      % regularization parameter
-batch = 1000;        % batch size
-max_epoch = 25;      % number of training iterations to run
+batch = 1000;           % Batch size
+max_epoch = 25;         % Number of training iterations to run
+epsilon = .1;
+act_func_max = 5;       % max activation function codes
+act2str = ["Linear", "Sigmoid","Tanh","ReLU","ELU"];
+
+%% Find Alpha and Lambda values
+num_hidden_init = 784;   % Number of hidden nodes for finding alpha and lambda
+
+get_new_vals = true;
+if(get_new_vals)
+    [alpha, lambda] = find_params(x_train,x_train,x_val,x_val,num_hidden_init,batch,epsilon,max_epoch);
+    save('alpha_lambda.mat','alpha','lambda')
+else
+    load('alpha_lambda.mat')
+end
 
 %% Train Network
-lambda = 10.^(2:-2:-4);
-alpha = 10.^[1:-1:-4  -6:-2:-10];
-losses = zeros(size(lambda,2), size(alpha,2)); % rows are lambda, columns are alpha
+num_hidden_support = [50, 20]; % Test num_hidden values on log scale
+losses = zeros(size(act_func_max,2),size(num_hidden_support,2));
 
-for j=1:5
-    act_func = j
-    min = Inf;
-    min_idx = [0  0];
-
-    % figure(1); hold on;
-    for i=1:size(lambda,2)
-        for k=1:size(alpha, 2)
-            disp(['lambda = ',num2str(lambda(i)),', alpha = ', num2str(alpha(k))])
-            [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden, act_func, alpha(k),lambda(i), batch, max_epoch );
-            t = size(loss,2);
-            if(t~=max_epoch)
-                % Had to break, values became nonreal
-                loss(t+1:max_epoch) = loss(t);
-            end
-
-            if loss(t) < min, min = loss(t); min_idx = [i k]; end
-
-            % plot(1:max_epoch,loss);
-            % leg(i) = "lambda = "+num2str(lambda(i));
+figure(1);
+for act_func=1:act_func_max
+    
+    disp("Starting Activation Function: "+act2str(act_func));
+    
+    subplot(3,2,act_func)
+    title("Activation Function: "+act2str(act_func));
+    clear leg; hold on;
+    
+    for num_hidden=1:size(num_hidden_support,2)
+        [ w, v, loss ] = train_network(x_train, x_train, x_val, x_val, num_hidden_support(num_hidden), act_func, alpha(act_func),lambda(act_func), batch, epsilon, max_epoch, true );
+        t = size(loss,2);
+        losses(act_func,num_hidden) = loss(t);
+        % Handle case when weights go to Inf or loss converged
+        if(t~=max_epoch+1)
+            loss(t+1:max_epoch+1) = loss(t);
         end
+        plot(0:max_epoch,loss);
+        leg(num_hidden) = "num hidden = "+num2str(num_hidden_support(num_hidden));
     end
-    %legend(leg);
-    % hold off;
+    legend(leg); hold off;
 
-    disp(['Best loss for act_func(',num2str(act_func),') was ', num2str(min), ' when alpha=',num2str(alpha(min_idx(2))),' and lambda=', num2str(lambda(min_idx(1))),'.']);
 end

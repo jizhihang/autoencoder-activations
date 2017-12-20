@@ -1,8 +1,10 @@
-function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_func, alpha, lambda, batch, max_epoch )
+function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_func, alpha, lambda, batch, epsilon, max_epoch, verbose )
     % Train Network: trains a 2-layer neural network
     % Parameters:
-    %   X           - Input Vector (n x m)
-    %   y           - Output Vector (n x p)
+    %   x_train         - Input Vector (n x m)
+    %   y_train         - Output Vector (n x p)
+    %   x_val           - Input Validation Vector (n_val x m_val)
+    %   y_val           - Output Validation Vector (n_val x p_val)
     %   num_hidden  - The number of hidden nodes in the network
     %   act_func    - The activation function desired:
     %         (1) Linear
@@ -13,35 +15,39 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
     %   alpha       - The step size
     %   lambda      - The l2 regularization term
     %   batch       - The batch size
+    %   epsilon     - loss convergence criteria
     %   max_epoch   - The maximum number of epochs
+    %   verbose     - If true the network prints status of training
     %
     % Returns:
     %   w           - The learned weights from input to hidden layer
     %   v           - The learned weights from hidden to output layer
     %   t           - The number of epochs
     
-    if nargin<11, max_epoch = 10; end
-    if nargin<10, batch = 100; end
-    if nargin<9, lambda = 0; end
-    if nargin<8, alpha = 1e-2; end
-    if nargin<7, act_func = 1; end
-    if nargin<6, num_hidden = 784; end
+    if nargin<12, verbose = false; end
+    if nargin<11, max_epoch = 100; end
+    if nargin<10, epsilon = 10; end
+    if nargin<9, batch = 100; end
+    if nargin<8, lambda = 0; end
+    if nargin<7, alpha = 1e-2; end
+    if nargin<6, act_func = 1; end
+    if nargin<5, num_hidden = 784; end
     
     rng('default');
     
     [n,m] = size(X); % input layer dimensions
     [n_val,m_val] = size(X_val);
-    t = 0;
-    dist = Inf; % initialize to some value that clearly has not converged yet
+    t = 1;
     
-
+    err = Inf;
     % Generate normally distributed weight matrices with pseudorandom numbers.
     w = randn(m+1, num_hidden); % weights for inputs-hidden
     v = randn(num_hidden+1, m); % weights for hidden-outputs
-
+    
+    loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
 
     %% Train Autoencoder
-    while( (t < max_epoch) )
+    while( (t <= max_epoch) && (err > epsilon) )
 
         % Pick random images
         img_idx = randperm(n);
@@ -49,9 +55,11 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         
         reverseStr = '';
         for i = 1:ceil(n/batch)
-%             msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
-%             fprintf([reverseStr, msg]);
-%             reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            if(verbose)
+                msg = sprintf('Epoch %d Progress: %3.1f', t+1, 100 * i / ceil(n/batch));
+                fprintf([reverseStr, msg]);
+                reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            end
             
             idx_hi = idx_lo + batch - 1;
             if idx_hi > n, idx_hi = n; end
@@ -85,9 +93,10 @@ function [ w, v, loss ] = train_network( X, y, X_val, y_val, num_hidden, act_fun
         t = t + 1;
         loss(t) = norm(act([ones(n_val,1) act([ones(n_val,1) X_val]*w, act_func)]*v, act_func)-y_val);
         
-        %fprintf('\nL2 Validation Loss After Epoch %d Is %3.1e\n',t,loss(t))
+        if(verbose), fprintf('\nL2 Validation Loss After Epoch %d Is %1.2e\n',t-1,loss(t)); end
         
-        if isnan(loss(t)), t = max_epoch; return; end%loss = cat(2, loss, zeros(max_epoch - t,1)'); return; end
+        if isnan(loss(t)), return; end%loss = cat(2, loss, zeros(max_epoch - t,1)'); return; end
+        if((loss(t)-loss(t-1))<epsilon), return; end;
         
     end
 end
